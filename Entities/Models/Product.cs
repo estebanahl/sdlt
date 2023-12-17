@@ -18,7 +18,7 @@ public class Product
     [Column("active")]
     public bool Active { get; set; }
     [Column("image_url")]
-    public string? ImageUrl { get; set; } = string.Empty;
+    public string ImageUrl { get; set; } = string.Empty;
     public Category Category {get;set;} = null!;
 
 }

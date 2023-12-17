@@ -18,15 +18,24 @@ internal sealed class CategoryService : ICategoryService
         _mapper = mapper;
     }
 
-    public IEnumerable<CategoryDto> GetAllCategories(bool trackChanges)
+    public async Task<IEnumerable<CategoryDto>> GetAllCategoriesAsync(bool trackChanges)
     {
-        try{
-            var categories = _repository.Category.GetAllCategories(trackChanges);
+        // try{
+            var categories = await _repository.Category.GetAllCategoriesAsync(trackChanges);
             var categoriesDto = _mapper.Map<IEnumerable<CategoryDto>>(categories);
             return categoriesDto;
-        }catch(Exception ex){
-            _logger.LogError($"Something went VERY wrong in the {nameof(GetAllCategories)} service method: {ex}");
-            throw;
-        }
+        // }catch(Exception ex){
+        //     _logger.LogError($"Something went VERY wrong in the {nameof(GetAllCategories)} service method: {ex}");
+        //     throw;
+        // }
+    }
+
+    public async Task<CategoryDto> GetCategoryAsync(Guid id, bool trackChanges)
+    {
+        var category = await _repository.Category.GetCategoryAsync(id, trackChanges);
+
+        var categoryDto = _mapper.Map<CategoryDto>(category);
+
+        return categoryDto;
     }
 }

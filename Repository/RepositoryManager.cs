@@ -17,5 +17,5 @@ public sealed class RepositoryManager : IRepositoryManager
     public ICategoryRepository Category => _categoryRepository.Value;
     public IProductRepository Product => _productRepository.Value;
     
-    public void Save() => _repositoryContext.SaveChanges();
+    public void SaveAsync() => _repositoryContext.SaveChangesAsync();
 }

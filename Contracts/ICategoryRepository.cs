@@ -4,6 +4,7 @@ namespace sdlt.Contracts
 {
     public interface ICategoryRepository
     {
-        IEnumerable<Category> GetAllCategories(bool trackChanges);
+        Task<IEnumerable<Category>> GetAllCategoriesAsync(bool trackChanges);
+        Task<Category?> GetCategoryAsync(Guid categoryId, bool trackChanges);
     }
 }
