@@ -1,6 +1,9 @@
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Mvc;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Exceptions;
+using sdlt.Service.Contracts;
 
 namespace sdlt.Controllers;
 
@@ -11,15 +14,13 @@ public class ProductsController : ControllerBase
 
     public ProductsController(IServiceManager service) => _service = service;
     [HttpPost]
-    public async Task<ActionResult> Post([FromQuery] ProductForCreationDto model)
+    public async Task<ActionResult> Post([FromForm] ProductForCreationDto model)
     {
-        if (ModelState.IsValid)
-        {
-            var createdProduct = await _service.ProductService.CreateProductAsync(model);
-            return CreatedAtRoute("ProductById", new { id = createdProduct.Id }, createdProduct);
-        }
-        else
-            return BadRequest();
+        if (!ModelState.IsValid)
+            return UnprocessableEntity(ModelState);
+        
+        var createdProduct = await _service.ProductService.CreateProductAsync(model);
+        return CreatedAtRoute("ProductById", new { id = createdProduct.Id }, createdProduct);
     }
 
     [HttpGet]
@@ -36,6 +37,30 @@ public class ProductsController : ControllerBase
         var product = await _service.ProductService.GetProductAsync(id, trackChanges: false)
             ?? throw new ProductNotFoundException(id);
         return Ok(product);
+    }
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteProduct(Guid id)
+    {
+        await _service.ProductService.DeleteProductAsync(id, trackChanges: false);
+        return NoContent();
+    }
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductForUpdateDto productForUpdate)
+    {
+        if(string.IsNullOrEmpty(productForUpdate.ToString()))
+            return BadRequest("Product for update object is null");    
+        if (!ModelState.IsValid)
+            return UnprocessableEntity(ModelState);     
+        await _service.ProductService.UpdateProductAsync(id, productForUpdate, trackChanges: true);
+        return NoContent();
+    }
+
+    [HttpPatch("{id:guid}")]
+    public async Task<ActionResult> UpdateProductPicture(Guid id, [FromForm] ProductPictureDto model)
+    {        
+        
+        await _service.ProductService.UpdateProductPictureAsync(id, model.Picture, trackChanges: true);
+        return NoContent();
     }
 }
 //         // GET: Producto/GetProducto

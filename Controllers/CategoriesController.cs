@@ -20,10 +20,17 @@ public class CategoriesController : ControllerBase{
         // }
     }
 
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetCategory(Guid id){
         var category = await _service.CategoryService.GetCategoryAsync(id, trackChanges: false)
             ?? throw new CategoryNotFoundException(id);
         return Ok(category);
+    }
+
+    [HttpGet("{id:guid}/products")]
+    public async Task<IActionResult> GetProductsForCategory(Guid id){
+        var productsList = await _service.ProductService.GetProductsForCategory(id, trackChanges: false);
+        return Ok(productsList);
     }
 }

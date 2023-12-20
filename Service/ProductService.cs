@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql.Replication.PgOutput.Messages;
 using sdlt.Contracts;
@@ -33,7 +34,7 @@ internal sealed class ProductService : IProductService
 
     public async Task<ProductDto?> GetProductAsync(Guid id, bool trackChanges)
     {
-        var productQuery = _repository.Product.GetProductAsync(id, trackChanges);
+        var productQuery = _repository.Product.GetProduct(id, trackChanges);
 
         var productDto = await productQuery
             .Include(p => p.Category)
@@ -44,11 +45,11 @@ internal sealed class ProductService : IProductService
     }
 
     public async Task<ProductDto> CreateProductAsync(ProductForCreationDto productFromRequest)
-    {
+    {        
         ICloudinaryHelper cloudinaryService = new CloudinaryHelper();
         // Como es creación y la verificación de la dirección url de la imagen se hace en el servicio cloudinary
         // una vez que no sea vacía o nula, entonces le paso una cadena vacía como lo que tendría que ser la imageurl
-        var uploadResult = await cloudinaryService.UpsertPhotoAsync(productFromRequest.Image, "");
+        var uploadResult = await cloudinaryService.UpsertPhotoAsync(productFromRequest.Image!, "");
         var productEntity = new Product
         {
             Active = true,
@@ -60,7 +61,7 @@ internal sealed class ProductService : IProductService
         _repository.Product.CreateProduct(productEntity);
         var theCategory = await _repository.Category.GetCategoryAsync(productFromRequest.CategoryId, trackChanges: false)
             ?? throw new CategoryNotFoundException(productFromRequest.CategoryId);
-        _repository.SaveAsync();
+        await _repository.SaveAsync();
 
         var productToReturn = new ProductDto(
             productEntity.Id,
@@ -70,5 +71,53 @@ internal sealed class ProductService : IProductService
             productEntity.ImageUrl
             );
         return productToReturn;
+    }
+
+    public async Task DeleteProductAsync(Guid productId, bool trackChanges)
+    {
+        var product = await _repository.Product.GetProduct(productId,trackChanges).SingleOrDefaultAsync()
+            ?? throw new ProductNotFoundException(productId);
+
+        _repository.Product.DeleteProduct(product);
+        _repository.SaveAsync();
+    }
+
+    public async Task UpdateProductAsync(Guid productId, ProductForUpdateDto productForUpdate, bool trackChanges)
+    {
+        var productFromDB = await _repository.Product.GetProduct(productId, trackChanges).SingleOrDefaultAsync()
+            ?? throw new ProductNotFoundException(productId);
+
+        _mapper.Map(productForUpdate, productFromDB);
+            
+        productFromDB.Active = true;
+            
+        await _repository.SaveAsync();
+    }
+
+    public async Task UpdateProductPictureAsync(Guid productId, IFormFile productPicture, bool trackChanges)
+    {
+        var productFromDB = await _repository.Product.GetProduct(productId, trackChanges).SingleOrDefaultAsync()
+            ?? throw new ProductNotFoundException(productId);
+
+        ICloudinaryHelper cloudinaryService = new CloudinaryHelper();
+        var uploadResult = await cloudinaryService.UpsertPhotoAsync(productPicture, productFromDB.ImageUrl);
+
+        productFromDB.ImageUrl = "https://res.cloudinary.com" + uploadResult.SecureUrl.AbsolutePath;
+
+        await _repository.SaveAsync();
+    }
+
+    public async Task<IEnumerable<ProductDto>?> GetProductsForCategory(Guid categoryId, bool trackChanges)
+    {
+        var category = await _repository.Category.GetCategoryAsync(categoryId, trackChanges: false) 
+            ?? throw new CategoryNotFoundException(categoryId);
+        var productsQuery = _repository.Product.GetProductsForCategory(categoryId, trackChanges: false);
+
+        IEnumerable<ProductDto> productsList = await productsQuery
+            .Include(p => p.Category)
+            .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl))
+            .ToListAsync();
+
+        return productsList;
     }
 }

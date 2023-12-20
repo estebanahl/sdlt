@@ -1,3 +1,8 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace sdlt.DataTransferObjects;
 
-public record ProductForCreationDto(string Name, string Description, Guid CategoryId, IFormFile Image);
+public record ProductForCreationDto  : ProductForManipulationDto
+{
+    public IFormFile Image { get; init; } = null!;
+}

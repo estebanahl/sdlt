@@ -10,6 +10,10 @@ public class CategoryRepository : RepositoryBase<Category>, ICategoryRepository
     {
     }
 
+    public void CreateCategory(Category category) => Create(category);
+
+    public void DeleteCategory(Category category) => Delete(category);
+
     public async Task<IEnumerable<Category>> GetAllCategoriesAsync(bool trackChanges) =>
         await FindAll(trackChanges)
             // .OrderBy(c => c)

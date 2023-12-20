@@ -27,7 +27,7 @@ public class CloudinaryHelper : ICloudinaryHelper
 
                 // se necesitan transformations
             };
-            if (!string.IsNullOrEmpty(wholeUrlPath))
+            if (!string.IsNullOrEmpty(wholeUrlPath)) 
                 await DeletePhotoAsync(wholeUrlPath);
 
             uploadResult = await _cloudinary.UploadAsync(uploadParam);
