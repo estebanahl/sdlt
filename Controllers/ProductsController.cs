@@ -1,9 +1,8 @@
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
+using sdlt.ActionFilters;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Exceptions;
-using sdlt.Service.Contracts;
 
 namespace sdlt.Controllers;
 
@@ -13,20 +12,22 @@ public class ProductsController : ControllerBase
     private readonly IServiceManager _service;
 
     public ProductsController(IServiceManager service) => _service = service;
+
     [HttpPost]
-    public async Task<ActionResult> Post([FromForm] ProductForCreationDto model)
+    [ServiceFilter(typeof(ValidationFilterAttribute))]
+    public async Task<ActionResult> Post([FromBody] ProductForCreationDto model)
     {
-        if (!ModelState.IsValid)
-            return UnprocessableEntity(ModelState);
+        // if (!ModelState.IsValid)
+        //     return UnprocessableEntity(ModelState);
         
         var createdProduct = await _service.ProductService.CreateProductAsync(model);
         return CreatedAtRoute("ProductById", new { id = createdProduct.Id }, createdProduct);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] ProductParameters parameters)
     {
-        var products = await _service.ProductService.GetAllProductsAsync(trackChanges: false);
+        var products = await _service.ProductService.GetAllProductsAsync(parameters, trackChanges: false);
         return Ok(products);
         
     }
@@ -45,20 +46,21 @@ public class ProductsController : ControllerBase
         return NoContent();
     }
     [HttpPut("{id:guid}")]
+    [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductForUpdateDto productForUpdate)
     {
-        if(string.IsNullOrEmpty(productForUpdate.ToString()))
-            return BadRequest("Product for update object is null");    
-        if (!ModelState.IsValid)
-            return UnprocessableEntity(ModelState);     
+        // if(string.IsNullOrEmpty(productForUpdate.ToString()))
+        //     return BadRequest("Product for update object is null");    
+        // if (!ModelState.IsValid)
+        //     return UnprocessableEntity(ModelState);     
         await _service.ProductService.UpdateProductAsync(id, productForUpdate, trackChanges: true);
         return NoContent();
     }
 
     [HttpPatch("{id:guid}")]
+    [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<ActionResult> UpdateProductPicture(Guid id, [FromForm] ProductPictureDto model)
-    {        
-        
+    {                
         await _service.ProductService.UpdateProductPictureAsync(id, model.Picture, trackChanges: true);
         return NoContent();
     }

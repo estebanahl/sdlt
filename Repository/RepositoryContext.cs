@@ -13,8 +13,10 @@ public class RepositoryContext : DbContext
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ProductConfiguration());
     }
-
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    => optionsBuilder
+        .UseLazyLoadingProxies();
     public DbSet<Category>? Categories { get; set; }
-    public DbSet<Product>? Product { get; set; }
+    public DbSet<Product>? Products { get; set; }
 }
 

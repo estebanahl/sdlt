@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace sdlt.Entities.Models;
 
@@ -13,12 +14,12 @@ public class Product
     public string Name { get; set; } = string.Empty;
     [Column("description")]
     public string Description { get; set; } = string.Empty;
-    [Column("category_id")]
-    public Guid CategoryId { get; set; }
     [Column("active")]
     public bool Active { get; set; }
     [Column("image_url")]
     public string ImageUrl { get; set; } = string.Empty;
-    public Category Category {get;set;} = null!;
+    [Column("category_id")]
+    public Guid CategoryId { get; set; }
+    public virtual Category Category{get; set;} = null!;
 
 }

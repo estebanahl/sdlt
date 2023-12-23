@@ -1,5 +1,5 @@
-
 using Microsoft.AspNetCore.Mvc;
+using sdlt.DataTransferObjects;
 using sdlt.Entities.Exceptions;
 
 namespace sdlt.Controllers;
@@ -19,9 +19,15 @@ public class CategoriesController : ControllerBase{
         //     return StatusCode(500, "Internal server error");
         // }
     }
+    [HttpPost]
+    public async Task<IActionResult> CreateCategory(CategoryForCreationDto categoryForCreation){
+        var createdCatetgory = await _service.CategoryService.CreateCategory(categoryForCreation, trackChanges: false);
+        return CreatedAtRoute("CategoryById", new {id = createdCatetgory.Id}, createdCatetgory);
+    }
 
 
-    [HttpGet("{id:guid}")]
+
+    [HttpGet("{id:guid}", Name ="CategoryById")]
     public async Task<IActionResult> GetCategory(Guid id){
         var category = await _service.CategoryService.GetCategoryAsync(id, trackChanges: false)
             ?? throw new CategoryNotFoundException(id);
@@ -29,8 +35,9 @@ public class CategoriesController : ControllerBase{
     }
 
     [HttpGet("{id:guid}/products")]
-    public async Task<IActionResult> GetProductsForCategory(Guid id){
-        var productsList = await _service.ProductService.GetProductsForCategory(id, trackChanges: false);
+    public async Task<IActionResult> GetProductsForCategory([FromQuery] ProductParameters parameters, Guid id){
+        // la carga retrasada (lazy loading) necesita que se rastree la entidad de la bd por eso true
+        var productsList = await _service.ProductService.GetProductsForCategory(parameters, id, trackChanges: true);
         return Ok(productsList);
     }
 }

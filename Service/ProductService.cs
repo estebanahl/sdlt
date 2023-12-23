@@ -21,13 +21,11 @@ internal sealed class ProductService : IProductService
         _logger = logger;
         _mapper = mapper;
     }
-    public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync(bool trackChanges)
+    public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync(ProductParameters parameters, bool trackChanges)
     {
-        var productsQuery = _repository.Product.GetAllProducts(trackChanges);
-        var productsDto = await productsQuery
-            .Include(p => p.Category)
-            .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl))
-            .ToListAsync();
+        var productsQuery = await _repository.Product.GetAllProducts(parameters, trackChanges);
+        IEnumerable<ProductDto> productsDto = productsQuery
+            .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl));
         return productsDto;
 
     }
@@ -37,7 +35,6 @@ internal sealed class ProductService : IProductService
         var productQuery = _repository.Product.GetProduct(id, trackChanges);
 
         var productDto = await productQuery
-            .Include(p => p.Category)
             .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl))
             .SingleOrDefaultAsync();
 
@@ -45,7 +42,7 @@ internal sealed class ProductService : IProductService
     }
 
     public async Task<ProductDto> CreateProductAsync(ProductForCreationDto productFromRequest)
-    {        
+    {
         ICloudinaryHelper cloudinaryService = new CloudinaryHelper();
         // Como es creación y la verificación de la dirección url de la imagen se hace en el servicio cloudinary
         // una vez que no sea vacía o nula, entonces le paso una cadena vacía como lo que tendría que ser la imageurl
@@ -58,9 +55,9 @@ internal sealed class ProductService : IProductService
             ImageUrl = "https://res.cloudinary.com" + uploadResult.SecureUrl.AbsolutePath,
             Name = productFromRequest.Name
         };
+
         _repository.Product.CreateProduct(productEntity);
-        var theCategory = await _repository.Category.GetCategoryAsync(productFromRequest.CategoryId, trackChanges: false)
-            ?? throw new CategoryNotFoundException(productFromRequest.CategoryId);
+        var theCategory = await GetCategoryAndCheckIfExists(productFromRequest.CategoryId, trackChanges: false);
         await _repository.SaveAsync();
 
         var productToReturn = new ProductDto(
@@ -75,29 +72,28 @@ internal sealed class ProductService : IProductService
 
     public async Task DeleteProductAsync(Guid productId, bool trackChanges)
     {
-        var product = await _repository.Product.GetProduct(productId,trackChanges).SingleOrDefaultAsync()
-            ?? throw new ProductNotFoundException(productId);
+        var product = await GetProductAndCheckIfExists(productId, trackChanges);
 
         _repository.Product.DeleteProduct(product);
-        _repository.SaveAsync();
+        await _repository.SaveAsync();
     }
 
     public async Task UpdateProductAsync(Guid productId, ProductForUpdateDto productForUpdate, bool trackChanges)
     {
-        var productFromDB = await _repository.Product.GetProduct(productId, trackChanges).SingleOrDefaultAsync()
-            ?? throw new ProductNotFoundException(productId);
+        var productFromDB = await GetProductAndCheckIfExists(productId, trackChanges);
+
+        var category = await GetCategoryAndCheckIfExists(productForUpdate.CategoryId, trackChanges: false);
 
         _mapper.Map(productForUpdate, productFromDB);
-            
+
         productFromDB.Active = true;
-            
+
         await _repository.SaveAsync();
     }
 
     public async Task UpdateProductPictureAsync(Guid productId, IFormFile productPicture, bool trackChanges)
     {
-        var productFromDB = await _repository.Product.GetProduct(productId, trackChanges).SingleOrDefaultAsync()
-            ?? throw new ProductNotFoundException(productId);
+        var productFromDB = await GetProductAndCheckIfExists(productId, trackChanges);
 
         ICloudinaryHelper cloudinaryService = new CloudinaryHelper();
         var uploadResult = await cloudinaryService.UpsertPhotoAsync(productPicture, productFromDB.ImageUrl);
@@ -107,17 +103,28 @@ internal sealed class ProductService : IProductService
         await _repository.SaveAsync();
     }
 
-    public async Task<IEnumerable<ProductDto>?> GetProductsForCategory(Guid categoryId, bool trackChanges)
+    public async Task<IEnumerable<ProductDto>?> GetProductsForCategory(ProductParameters parameters, Guid categoryId, bool trackChanges)
     {
-        var category = await _repository.Category.GetCategoryAsync(categoryId, trackChanges: false) 
-            ?? throw new CategoryNotFoundException(categoryId);
-        var productsQuery = _repository.Product.GetProductsForCategory(categoryId, trackChanges: false);
+        var category = await GetCategoryAndCheckIfExists(categoryId, trackChanges: false);
+        {
+            // la carga retrasada (lazy loading) necesita que se rastree la entidad de la bd por eso true
+            var productsQuery = await _repository.Product.GetProductsForCategory(parameters, categoryId, trackChanges: true); 
 
-        IEnumerable<ProductDto> productsList = await productsQuery
-            .Include(p => p.Category)
-            .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl))
-            .ToListAsync();
+            IEnumerable<ProductDto> productsList = productsQuery
+                .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl));
 
-        return productsList;
+            return productsList;
+        }
+
+    }
+    private async Task<Category> GetCategoryAndCheckIfExists(Guid id, bool trackChanges)
+    {
+        return await _repository.Category.GetCategoryAsync(id, trackChanges: false)
+                    ?? throw new CategoryNotFoundException(id);
+    }
+    private async Task<Product> GetProductAndCheckIfExists(Guid id, bool trackChanges)
+    {
+        return await _repository.Product.GetProduct(id, trackChanges: false).SingleOrDefaultAsync()
+                    ?? throw new CategoryNotFoundException(id);
     }
 }
