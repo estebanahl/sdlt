@@ -1,4 +1,4 @@
-namespace sdlt.DataTransferObjects;
+namespace sdlt.Entities.RequestFeatures;
 
 public abstract class RequestParameters
 {
@@ -17,4 +17,5 @@ public abstract class RequestParameters
             _pageSize = (value > maxPageSize) ? maxPageSize : value;
         }
     }
+    public string? OrderBy { get; set; }
 }

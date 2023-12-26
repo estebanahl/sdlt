@@ -4,7 +4,8 @@ using sdlt.DataTransferObjects;
 using sdlt.Entities.Models;
 using sdlt.Entities.RequestFeatures;
 using sdlt.Repository;
-
+using sdlt.Repository.Extensions;
+namespace sdlt.Repository;
 public class ProductRepository : RepositoryBase<Product>, IProductRepository
 {
     public ProductRepository(RepositoryContext repositoryContext)
@@ -13,10 +14,12 @@ public class ProductRepository : RepositoryBase<Product>, IProductRepository
     }
 
     public async Task<PagedList<Product>> GetAllProducts(ProductParameters parameters, bool trackChanges){
-        var query = FindAll(trackChanges)
-            .OrderBy(p => p.Category.Id)
+        var query = FindByCondition(p => p.Price >= parameters.MinPrice && p.Price <= parameters.MaxPrice, trackChanges)
+            .FilterProducts(parameters.MinPrice, parameters.MaxPrice)
+            .Search(parameters.SearchTerm!)
             .Skip((parameters.PageNumber - 1) * parameters.PageSize)
-            .Take(parameters.PageSize);
+            .Take(parameters.PageSize)
+            .Sort(parameters.OrderBy!);
 
         var count = await query.CountAsync();
 
@@ -33,11 +36,13 @@ public class ProductRepository : RepositoryBase<Product>, IProductRepository
     public void DeleteProduct(Product product) => Delete(product);
 
     public async Task<PagedList<Product>> GetProductsForCategory(ProductParameters parameters, Guid categoryId, bool trackChanges) {
-        var query = FindByCondition(p => p.CategoryId.Equals(categoryId), trackChanges)
-            .OrderBy(p => p)
+        var query = FindByCondition(p => p.CategoryId.Equals(categoryId) && p.Price >= parameters.MinPrice && p.Price <= parameters.MaxPrice, trackChanges)
+            .FilterProducts(parameters.MinPrice, parameters.MaxPrice)
+            .Search(parameters.SearchTerm!)
             .Skip((parameters.PageNumber - 1) * parameters.PageSize)
-            .Take(parameters.PageSize);
-
+            .Take(parameters.PageSize)
+            .Sort(parameters.OrderBy!);
+            
         var count = await query.CountAsync();
 
         var productsList = await query.ToListAsync();

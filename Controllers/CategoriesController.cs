@@ -1,6 +1,8 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Exceptions;
+using sdlt.Entities.RequestFeatures;
 
 namespace sdlt.Controllers;
 
@@ -37,7 +39,8 @@ public class CategoriesController : ControllerBase{
     [HttpGet("{id:guid}/products")]
     public async Task<IActionResult> GetProductsForCategory([FromQuery] ProductParameters parameters, Guid id){
         // la carga retrasada (lazy loading) necesita que se rastree la entidad de la bd por eso true
-        var productsList = await _service.ProductService.GetProductsForCategory(parameters, id, trackChanges: true);
-        return Ok(productsList);
+        var pagedResult = await _service.ProductService.GetProductsForCategory(parameters, id, trackChanges: true);
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagedResult.metaData));
+        return Ok(pagedResult.products);
     }
 }

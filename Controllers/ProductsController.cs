@@ -1,8 +1,11 @@
 using System.Runtime.InteropServices;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using sdlt.ActionFilters;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Exceptions;
+using sdlt.Entities.RequestFeatures;
 
 namespace sdlt.Controllers;
 
@@ -25,10 +28,12 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize]
     public async Task<IActionResult> GetAll([FromQuery] ProductParameters parameters)
     {
-        var products = await _service.ProductService.GetAllProductsAsync(parameters, trackChanges: false);
-        return Ok(products);
+        var pagedResult = await _service.ProductService.GetAllProductsAsync(parameters, trackChanges: true);
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagedResult.metaData));
+        return Ok(pagedResult.products);
         
     }
 

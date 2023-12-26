@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using sdlt.Contracts;
 using sdlt.Entities.Models;
-using sdlt.Repository;
+
+namespace sdlt.Repository;
 
 public class CategoryRepository : RepositoryBase<Category>, ICategoryRepository
 {

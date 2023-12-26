@@ -14,12 +14,14 @@ public class Product
     public string Name { get; set; } = string.Empty;
     [Column("description")]
     public string Description { get; set; } = string.Empty;
+    [Column("price")]
+    public decimal Price { get; set; }
     [Column("active")]
     public bool Active { get; set; }
     [Column("image_url")]
     public string ImageUrl { get; set; } = string.Empty;
     [Column("category_id")]
     public Guid CategoryId { get; set; }
-    public virtual Category Category{get; set;} = null!;
+    public virtual Category Category { get; set; } = null!;
 
 }

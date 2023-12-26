@@ -1,11 +1,10 @@
 using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.Replication.PgOutput.Messages;
 using sdlt.Contracts;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Exceptions;
 using sdlt.Entities.Models;
+using sdlt.Entities.RequestFeatures;
 using sdlt.Service.Contracts;
 
 namespace sdlt.Service;
@@ -21,21 +20,42 @@ internal sealed class ProductService : IProductService
         _logger = logger;
         _mapper = mapper;
     }
-    public async Task<IEnumerable<ProductDto>?> GetAllProductsAsync(ProductParameters parameters, bool trackChanges)
+    public async Task<(IEnumerable<ProductDto>? products, MetaData metaData)> GetAllProductsAsync(ProductParameters parameters, bool trackChanges)
     {
-        var productsQuery = await _repository.Product.GetAllProducts(parameters, trackChanges);
-        IEnumerable<ProductDto> productsDto = productsQuery
-            .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl));
-        return productsDto;
+        if(!parameters.ValidPriceRange)
+            throw new MaxPriceRangeBadRequestException();
+            
+        var productsWithMetaData = await _repository.Product.GetAllProducts(parameters, trackChanges);
+        IEnumerable<ProductDto> productsDto = productsWithMetaData.Select(
+            p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.Price, p.ImageUrl));
 
+        return (products: productsDto, metaData: productsWithMetaData.MetaData);
     }
 
+    public async Task<(IEnumerable<ProductDto>? products, MetaData metaData)> GetProductsForCategory(
+        ProductParameters parameters, Guid categoryId, bool trackChanges)
+    {
+        if(!parameters.ValidPriceRange)
+            throw new MaxPriceRangeBadRequestException();
+
+        var category = await GetCategoryAndCheckIfExists(categoryId, trackChanges: false);
+        {
+            // la carga retrasada (lazy loading) necesita que se rastree la entidad de la bd por eso true
+            var productsWithMetaData = await _repository.Product.GetProductsForCategory(parameters, categoryId, trackChanges: true); 
+
+            var productsDto = productsWithMetaData.Select(
+                p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.Price, p.ImageUrl));
+
+            return (products: productsDto, metaData: productsWithMetaData.MetaData);
+        }
+
+    }
     public async Task<ProductDto?> GetProductAsync(Guid id, bool trackChanges)
     {
         var productQuery = _repository.Product.GetProduct(id, trackChanges);
 
         var productDto = await productQuery
-            .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl))
+            .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.Price, p.ImageUrl))
             .SingleOrDefaultAsync();
 
         return productDto;
@@ -65,6 +85,7 @@ internal sealed class ProductService : IProductService
             productEntity.Name,
             productEntity.Description,
             theCategory.Name,
+            productEntity.Price,
             productEntity.ImageUrl
             );
         return productToReturn;
@@ -103,20 +124,6 @@ internal sealed class ProductService : IProductService
         await _repository.SaveAsync();
     }
 
-    public async Task<IEnumerable<ProductDto>?> GetProductsForCategory(ProductParameters parameters, Guid categoryId, bool trackChanges)
-    {
-        var category = await GetCategoryAndCheckIfExists(categoryId, trackChanges: false);
-        {
-            // la carga retrasada (lazy loading) necesita que se rastree la entidad de la bd por eso true
-            var productsQuery = await _repository.Product.GetProductsForCategory(parameters, categoryId, trackChanges: true); 
-
-            IEnumerable<ProductDto> productsList = productsQuery
-                .Select(p => new ProductDto(p.Id, p.Name, p.Description, p.Category.Name, p.ImageUrl));
-
-            return productsList;
-        }
-
-    }
     private async Task<Category> GetCategoryAndCheckIfExists(Guid id, bool trackChanges)
     {
         return await _repository.Category.GetCategoryAsync(id, trackChanges: false)
