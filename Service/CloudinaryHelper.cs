@@ -9,9 +9,11 @@ public class CloudinaryHelper : ICloudinaryHelper
 {
 
     private readonly Cloudinary _cloudinary;
-    public CloudinaryHelper()
+    private readonly IConfiguration _configuration;// cuidado
+    public CloudinaryHelper(IConfiguration configuration)
     {
-        _cloudinary = new Cloudinary("cloudinary://427996914125567:qQe4v1MexM4mNmrluGG2K41exUQ@dumwds5gm");
+        _configuration = configuration;
+        _cloudinary = new Cloudinary(_configuration["Cloudinary:Secret"]);
         _cloudinary.Api.Secure = true;
     }
 

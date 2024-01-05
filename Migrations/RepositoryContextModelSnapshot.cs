@@ -46,22 +46,6 @@ namespace backEnd.Migrations
                         .HasDatabaseName("RoleNameIndex");
 
                     b.ToTable("AspNetRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = "5c511ad1-794a-4a76-b9c1-fbe6d172e092",
-                            ConcurrencyStamp = "e0056c4a-23f8-4fbb-8f9e-2a843c1a3861",
-                            Name = "Manager",
-                            NormalizedName = "MANAGER"
-                        },
-                        new
-                        {
-                            Id = "6c2c9cb8-599e-4795-ab1a-cd6caa52f79d",
-                            ConcurrencyStamp = "9ee88c93-c31d-4c8b-b1b1-490f2a56da06",
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -170,6 +154,34 @@ namespace backEnd.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("sdlt.Entities.Models.Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasMaxLength(60)
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("datetime");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("user_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("booking");
+                });
+
             modelBuilder.Entity("sdlt.Entities.Models.Category", b =>
                 {
                     b.Property<Guid>("Id")
@@ -190,20 +202,50 @@ namespace backEnd.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("category");
+                });
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("c9d4c053-49b6-410c-bc78-2d54a9991870"),
-                            Description = "",
-                            Name = "Ensaldas"
-                        },
-                        new
-                        {
-                            Id = new Guid("3d490a70-94ce-4d15-9494-5248280c2ce3"),
-                            Description = "",
-                            Name = "Carnes"
-                        });
+            modelBuilder.Entity("sdlt.Entities.Models.Event", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("event");
+                });
+
+            modelBuilder.Entity("sdlt.Entities.Models.EventBooking", b =>
+                {
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<Guid>("BookingId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("booking_id");
+
+                    b.HasKey("EventId", "BookingId");
+
+                    b.HasIndex("BookingId");
+
+                    b.ToTable("event_booking");
                 });
 
             modelBuilder.Entity("sdlt.Entities.Models.Product", b =>
@@ -246,38 +288,6 @@ namespace backEnd.Migrations
                     b.HasIndex("CategoryId");
 
                     b.ToTable("product");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("80abbca8-664d-4b20-b5de-024705497d4a"),
-                            Active = true,
-                            CategoryId = new Guid("c9d4c053-49b6-410c-bc78-2d54a9991870"),
-                            Description = "Ensalada rusa con mayonesa natura, zanahoria en cubos y arvejas",
-                            ImageUrl = "",
-                            Name = "Ensalada Rusa",
-                            Price = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("86dba8c0-d178-41e7-938c-ed49778fb52a"),
-                            Active = true,
-                            CategoryId = new Guid("c9d4c053-49b6-410c-bc78-2d54a9991870"),
-                            Description = "Ensalada de repollo con vinagre abadía",
-                            ImageUrl = "",
-                            Name = "Ensalada de repollo",
-                            Price = 0m
-                        },
-                        new
-                        {
-                            Id = new Guid("021ca3c1-0deb-4afd-ae94-2159a8479811"),
-                            Active = true,
-                            CategoryId = new Guid("3d490a70-94ce-4d15-9494-5248280c2ce3"),
-                            Description = "Pernil de cerdo fileteado curado por 2 años",
-                            ImageUrl = "",
-                            Name = "Pernil de cerdo fileteado",
-                            Price = 0m
-                        });
                 });
 
             modelBuilder.Entity("sdlt.Entities.Models.User", b =>
@@ -403,6 +413,36 @@ namespace backEnd.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("sdlt.Entities.Models.Booking", b =>
+                {
+                    b.HasOne("sdlt.Entities.Models.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("sdlt.Entities.Models.EventBooking", b =>
+                {
+                    b.HasOne("sdlt.Entities.Models.Booking", "Booking")
+                        .WithMany("EventBooking")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("sdlt.Entities.Models.Event", "Event")
+                        .WithMany("EventBooking")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("Event");
+                });
+
             modelBuilder.Entity("sdlt.Entities.Models.Product", b =>
                 {
                     b.HasOne("sdlt.Entities.Models.Category", "Category")
@@ -414,9 +454,19 @@ namespace backEnd.Migrations
                     b.Navigation("Category");
                 });
 
+            modelBuilder.Entity("sdlt.Entities.Models.Booking", b =>
+                {
+                    b.Navigation("EventBooking");
+                });
+
             modelBuilder.Entity("sdlt.Entities.Models.Category", b =>
                 {
                     b.Navigation("Products");
+                });
+
+            modelBuilder.Entity("sdlt.Entities.Models.Event", b =>
+                {
+                    b.Navigation("EventBooking");
                 });
 #pragma warning restore 612, 618
         }

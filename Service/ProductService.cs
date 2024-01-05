@@ -12,13 +12,15 @@ internal sealed class ProductService : IProductService
 {
     private readonly IRepositoryManager _repository;
     private readonly ILoggerManager _logger;
-    public readonly IMapper _mapper;
+    private readonly IMapper _mapper;
+    private readonly IConfiguration _configuration;
     public ProductService(IRepositoryManager repository, ILoggerManager
-    logger, IMapper mapper)
+    logger, IMapper mapper, IConfiguration configuration)
     {
         _repository = repository;
         _logger = logger;
         _mapper = mapper;
+        _configuration = configuration;
     }
     public async Task<(IEnumerable<ProductDto>? products, MetaData metaData)> GetAllProductsAsync(ProductParameters parameters, bool trackChanges)
     {
@@ -63,7 +65,7 @@ internal sealed class ProductService : IProductService
 
     public async Task<ProductDto> CreateProductAsync(ProductForCreationDto productFromRequest)
     {
-        ICloudinaryHelper cloudinaryService = new CloudinaryHelper();
+        ICloudinaryHelper cloudinaryService = new CloudinaryHelper(_configuration);
         // Como es creación y la verificación de la dirección url de la imagen se hace en el servicio cloudinary
         // una vez que no sea vacía o nula, entonces le paso una cadena vacía como lo que tendría que ser la imageurl
         var uploadResult = await cloudinaryService.UpsertPhotoAsync(productFromRequest.Image!, "");
@@ -116,7 +118,7 @@ internal sealed class ProductService : IProductService
     {
         var productFromDB = await GetProductAndCheckIfExists(productId, trackChanges);
 
-        ICloudinaryHelper cloudinaryService = new CloudinaryHelper();
+        ICloudinaryHelper cloudinaryService = new CloudinaryHelper(_configuration);
         var uploadResult = await cloudinaryService.UpsertPhotoAsync(productPicture, productFromDB.ImageUrl);
 
         productFromDB.ImageUrl = "https://res.cloudinary.com" + uploadResult.SecureUrl.AbsolutePath;
@@ -131,7 +133,7 @@ internal sealed class ProductService : IProductService
     }
     private async Task<Product> GetProductAndCheckIfExists(Guid id, bool trackChanges)
     {
-        return await _repository.Product.GetProduct(id, trackChanges: false).SingleOrDefaultAsync()
+        return await _repository.Product.GetProduct(id, trackChanges).SingleOrDefaultAsync()
                     ?? throw new CategoryNotFoundException(id);
     }
 }

@@ -14,7 +14,12 @@ public class ProductsController : ControllerBase
 {
     private readonly IServiceManager _service;
 
-    public ProductsController(IServiceManager service) => _service = service;
+    private readonly IConfiguration _configuration;
+
+    public ProductsController(IServiceManager service, IConfiguration configuration) {
+        _service = service;
+        _configuration = configuration;
+        }
 
     [HttpPost]
     [ServiceFilter(typeof(ValidationFilterAttribute))]
@@ -52,7 +57,7 @@ public class ProductsController : ControllerBase
     }
     [HttpPut("{id:guid}")]
     [ServiceFilter(typeof(ValidationFilterAttribute))]
-    public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductForUpdateDto productForUpdate)
+    public async Task<IActionResult> UpdateProduct(Guid id, [FromForm] ProductForUpdateDto productForUpdate)
     {
         // if(string.IsNullOrEmpty(productForUpdate.ToString()))
         //     return BadRequest("Product for update object is null");    

@@ -21,6 +21,7 @@ public class Product
     [Column("image_url")]
     public string ImageUrl { get; set; } = string.Empty;
     [Column("category_id")]
+    [ForeignKey("Category")]
     public Guid CategoryId { get; set; }
     public virtual Category Category { get; set; } = null!;
 
