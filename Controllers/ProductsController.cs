@@ -23,7 +23,7 @@ public class ProductsController : ControllerBase
 
     [HttpPost]
     [ServiceFilter(typeof(ValidationFilterAttribute))]
-    public async Task<ActionResult> Post([FromBody] ProductForCreationDto model)
+    public async Task<ActionResult> Post([FromForm] ProductForCreationDto model)
     {
         // if (!ModelState.IsValid)
         //     return UnprocessableEntity(ModelState);

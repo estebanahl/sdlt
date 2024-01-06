@@ -1,8 +1,12 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Npgsql.Replication;
 using sdlt.Contracts;
 using sdlt.Entities.Models;
 using sdlt.LoggerService;
@@ -13,6 +17,14 @@ namespace sdlt.Extensions;
 
 public static class ServiceExtensions
 {
+    public static void AllowSerializationOfDateOnly(this IServiceCollection services)
+    {
+        services.AddControllers()
+        .AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new DateOnlyJsonConverter());
+            });
+    }
     public static void ConfigureSqlContext(this IServiceCollection services,
         IConfiguration configuration) =>
             services.AddDbContext<RepositoryContext>(opts =>
