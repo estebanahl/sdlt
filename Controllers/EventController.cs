@@ -1,11 +1,8 @@
 ﻿using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using sdlt.ActionFilters;
 using sdlt.DataTransferObjects;
-using sdlt.Entities.Exceptions;
-using sdlt.Entities.Models;
 using sdlt.Entities.RequestFeatures;
 
 namespace sdlt.Controllers;

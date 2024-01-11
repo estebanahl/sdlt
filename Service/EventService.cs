@@ -67,21 +67,4 @@ public class EventService : IEventService
         _mapper.Map(eventToPatch, eventEntity);
         await _repository.SaveAsync();
     }
-
-    // public Task UpdateEventDate(Guid eventId, OneFieldToUpdate<DateOnly> date)
-    // {
-    //     throw new NotImplementedException();
-    // }
-
-    // public Task UpdateEventQuota(Guid eventId, OneFieldToUpdate<ushort> theEvent)
-    // {
-    //     throw new NotImplementedException();
-    // }
-
-    // private async Task<Event> GetEventAndCheckIfExists(Guid eventId, bool trackChanges){
-    //     var eventEntity= await _repository.Event.GetEvent(eventId, trackChanges)
-    //         .SingleOrDefaultAsync()
-    //             ?? throw new EventNotFoundException(eventId);
-    //     return eventEntity;
-    // }
 }
