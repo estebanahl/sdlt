@@ -21,7 +21,6 @@ public class ValidationFilterAttribute : IActionFilter
         }
         if(!context.ModelState.IsValid)
             context.Result = new UnprocessableEntityObjectResult(context.ModelState);
-
      }
     public void OnActionExecuted(ActionExecutedContext context) { }
 }

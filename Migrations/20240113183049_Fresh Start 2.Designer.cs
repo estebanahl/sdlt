@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using sdlt.Repository;
@@ -11,9 +12,10 @@ using sdlt.Repository;
 namespace backEnd.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
-    partial class RepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20240113183049_Fresh Start 2")]
+    partial class FreshStart2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -165,8 +167,8 @@ namespace backEnd.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("active");
 
-                    b.Property<TimeOnly>("ArrivalTime")
-                        .HasColumnType("time without time zone")
+                    b.Property<DateTime>("ArrivalTime")
+                        .HasColumnType("timestamp with time zone")
                         .HasColumnName("datetime");
 
                     b.Property<Guid>("EventId")
@@ -206,7 +208,7 @@ namespace backEnd.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("product_category");
+                    b.ToTable("category");
                 });
 
             modelBuilder.Entity("sdlt.Entities.Models.Event", b =>
@@ -225,9 +227,14 @@ namespace backEnd.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<DateOnly>("EndDate")
+                    b.Property<DateOnly>("EventEndDate")
                         .HasColumnType("date")
                         .HasColumnName("event_end_date");
+
+                    b.Property<DateOnly>("EventStartDate")
+                        .HasMaxLength(60)
+                        .HasColumnType("date")
+                        .HasColumnName("event_start_date");
 
                     b.Property<Guid>("EventTypeId")
                         .HasColumnType("uuid")
@@ -236,11 +243,6 @@ namespace backEnd.Migrations
                     b.Property<int>("Quota")
                         .HasColumnType("integer")
                         .HasColumnName("quota");
-
-                    b.Property<DateOnly>("StartDate")
-                        .HasMaxLength(60)
-                        .HasColumnType("date")
-                        .HasColumnName("event_start_date");
 
                     b.HasKey("Id");
 
@@ -255,14 +257,6 @@ namespace backEnd.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("event_type_id");
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("boolean")
-                        .HasColumnName("active");
-
-                    b.Property<byte>("DefaultQuota")
-                        .HasColumnType("smallint")
-                        .HasColumnName("default_quota");
 
                     b.Property<string>("Description")
                         .IsRequired()

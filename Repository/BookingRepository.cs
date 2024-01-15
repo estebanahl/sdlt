@@ -1,4 +1,6 @@
-﻿using sdlt.Contracts;
+﻿using System.Collections.Immutable;
+using Microsoft.EntityFrameworkCore;
+using sdlt.Contracts;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Models;
 using sdlt.Entities.RequestFeatures;
@@ -13,16 +15,31 @@ public class BookingRepository : RepositoryBase<Booking>, IBookingRepository
     : base(repositoryContext)
     {
     }
-    public void BookInEvent(BookingForCreationDto bookingForCreationDto, Guid EventId)
+    public void CreateBookInEvent(Booking booking)
     {
-        throw new NotImplementedException();
+        Create(booking);
     }
 
-    public Task<PagedList<Booking>> GetBookings(BookingParameters bookingParameters, bool trackChanges)
+    public async Task<Booking?> GetBooking(Guid bookingId, bool trackChanges)
     {
-        var query = FindAll(trackChanges).
-            FilterHourOfBookings(bookingParameters.MinHour, bookingParameters.MaxHour);
-            // falta agrupar y filtrar por evento
+       return await FindByCondition(b => b.Id.Equals(bookingId), trackChanges).SingleOrDefaultAsync();
+    }
+
+    public async Task<PagedList<Booking>> GetBookings(BookingParameters bookingParameters, bool trackChanges)
+    {
+        var query =  FindAll(trackChanges)
+                .FilterByUser(bookingParameters.UserId)
+                .FilterByEvent(bookingParameters.EventId) // asumamos que un guid empty daría
+                .FilterHourOfBookings(bookingParameters.MinHour, bookingParameters.MaxHour)
+                .SearchByUserName(bookingParameters.SearchTerm!)
+                .Sort(bookingParameters.OrderBy!)
+                .Skip((bookingParameters.PageNumber - 1) * bookingParameters.PageSize)
+                .Take(bookingParameters.PageSize);
+                
+            
+        var count = await query.CountAsync();
+        List<Booking> bookingsList = await query.ToListAsync();
+        return PagedList<Booking>.ToPagedList(bookingsList, count, bookingParameters.PageNumber, bookingParameters.PageSize);
     
     }
 }

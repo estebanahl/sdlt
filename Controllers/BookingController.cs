@@ -22,9 +22,9 @@ public class BookingController : ControllerBase
         _logger = logger;
     }
 
-    [HttpPost("{eventId:guid}/event")]
-    [Authorize]
-    public async Task<IActionResult> Post(BookingForCreationDto bookingForCreationDto, Guid eventId){
-
+    [HttpGet("{id:guid}", Name = "BookingById")]
+    public async Task<IActionResult> Get(Guid id){
+        var bookingDto = await _service.BookingService.GetBookingAsync(id, trackChanges: true);
+        return Ok(bookingDto);
     }
 }

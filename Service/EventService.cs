@@ -46,7 +46,7 @@ public class EventService : IEventService
     
     public async Task<EventDto> GetEventAsync(Guid id, bool trackChanges)
     {
-        Event eventEntity = await _repository.Event.GetEvent(id, trackChanges).SingleOrDefaultAsync()
+        Event? eventEntity = await _repository.Event.GetEvent(id, trackChanges).SingleOrDefaultAsync()
             ?? throw new EventNotFoundException(id);
         return _mapper.Map<EventDto>(eventEntity);
     }

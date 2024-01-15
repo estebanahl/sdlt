@@ -3,7 +3,7 @@ namespace sdlt.Entities.Exceptions;
 public sealed class MaxDateRangeBadRequestException : BadRequestException
 {
     public MaxDateRangeBadRequestException()
-    : base("Max date can't be less than min date.")
+    : base("Max date/hour can't be less than min date/hour.")
     {
     }
 }

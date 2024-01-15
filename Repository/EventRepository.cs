@@ -23,9 +23,10 @@ public class EventRepository : RepositoryBase<Event>, IEventRepository
         var query = FindAll(trackChanges)
              .FilterEvents(eventParameters.MinDate, eventParameters.MaxDate)
              .Search(eventParameters.SearchTerm!)
+             .Sort(eventParameters.OrderBy!)
              .Skip((eventParameters.PageNumber - 1) * eventParameters.PageSize)
-             .Take(eventParameters.PageSize)
-             .Sort(eventParameters.OrderBy!);
+             .Take(eventParameters.PageSize);
+             
 
         var count = await query.CountAsync();
 

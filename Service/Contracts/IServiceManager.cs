@@ -6,5 +6,5 @@ public interface IServiceManager
     ICategoryService CategoryService { get; }
     IAuthenticationService AuthenticationService { get; }
     IEventService EventService { get; }
-
+    IBookingService BookingService { get; }
 }

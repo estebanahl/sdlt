@@ -16,8 +16,6 @@ public class RepositoryContext : IdentityDbContext<User>
         modelBuilder.ApplyConfiguration(new CategoryConfiguration());
         modelBuilder.ApplyConfiguration(new ProductConfiguration());
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
-
-        modelBuilder.Entity<EventBooking>().HasKey(eb => new { eb.EventId, eb.BookingId});
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     => optionsBuilder
@@ -26,6 +24,6 @@ public class RepositoryContext : IdentityDbContext<User>
     public DbSet<Product>? Products { get; set; }
     public DbSet<Event>? Events { get; set; }
     public DbSet<Booking>? Bookings { get; set; }
-    public DbSet<EventBooking>? EventBookings { get; set; }
+    public DbSet<EventType>? EventTypes {get;set;}
 }
 

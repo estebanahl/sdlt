@@ -12,6 +12,7 @@ public sealed class ServiceManager : IServiceManager
     private readonly Lazy<IProductService> _productService;
     private readonly Lazy<IAuthenticationService> _authenticationService;
     private readonly Lazy<IEventService> _eventService;
+    private readonly Lazy<IBookingService> _bookingService;
     public ServiceManager(IRepositoryManager repositoryManager, ILoggerManager
         logger, IMapper mapper, UserManager<User> userManager, IConfiguration configuration)
     {
@@ -23,9 +24,12 @@ public sealed class ServiceManager : IServiceManager
             AuthenticationService(logger, mapper, userManager, configuration));
         _eventService = new Lazy<IEventService>(() => new
             EventService(repositoryManager, logger, mapper));
+        _bookingService = new Lazy<IBookingService>(() => new
+            BookingService(repositoryManager, logger, mapper));
     }
     public ICategoryService CategoryService => _categoryService.Value;
     public IProductService ProductService => _productService.Value;
     public IAuthenticationService AuthenticationService => _authenticationService.Value;
     public IEventService EventService => _eventService.Value;
+    public IBookingService BookingService => _bookingService.Value;
 }

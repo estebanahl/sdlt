@@ -12,8 +12,8 @@ using sdlt.Repository;
 namespace backEnd.Migrations
 {
     [DbContext(typeof(RepositoryContext))]
-    [Migration("20231228152422_Fresh start")]
-    partial class Freshstart
+    [Migration("20240114054845_Added Active on Booking")]
+    partial class AddedActiveonBooking
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -167,10 +167,13 @@ namespace backEnd.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("active");
 
-                    b.Property<DateTime>("DateTime")
-                        .HasMaxLength(60)
+                    b.Property<DateTime>("ArrivalTime")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("datetime");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
 
                     b.Property<string>("UserId")
                         .IsRequired()
@@ -178,6 +181,8 @@ namespace backEnd.Migrations
                         .HasColumnName("user_id");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EventId");
 
                     b.HasIndex("UserId");
 
@@ -203,7 +208,7 @@ namespace backEnd.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("category");
+                    b.ToTable("product_category");
                 });
 
             modelBuilder.Entity("sdlt.Entities.Models.Event", b =>
@@ -222,32 +227,58 @@ namespace backEnd.Migrations
                         .HasColumnType("text")
                         .HasColumnName("description");
 
-                    b.Property<string>("Name")
-                        .IsRequired()
+                    b.Property<DateOnly>("EventEndDate")
+                        .HasColumnType("date")
+                        .HasColumnName("event_end_date");
+
+                    b.Property<DateOnly>("EventStartDate")
                         .HasMaxLength(60)
-                        .HasColumnType("character varying(60)")
-                        .HasColumnName("name");
+                        .HasColumnType("date")
+                        .HasColumnName("event_start_date");
+
+                    b.Property<Guid>("EventTypeId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_type");
+
+                    b.Property<int>("Quota")
+                        .HasColumnType("integer")
+                        .HasColumnName("quota");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("EventTypeId");
 
                     b.ToTable("event");
                 });
 
-            modelBuilder.Entity("sdlt.Entities.Models.EventBooking", b =>
+            modelBuilder.Entity("sdlt.Entities.Models.EventType", b =>
                 {
-                    b.Property<Guid>("EventId")
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("event_id");
+                        .HasColumnName("event_type_id");
 
-                    b.Property<Guid>("BookingId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("booking_id");
+                    b.Property<bool>("Active")
+                        .HasColumnType("boolean")
+                        .HasColumnName("active");
 
-                    b.HasKey("EventId", "BookingId");
+                    b.Property<byte>("DefaultQuota")
+                        .HasColumnType("smallint")
+                        .HasColumnName("default_quota");
 
-                    b.HasIndex("BookingId");
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("description");
 
-                    b.ToTable("event_booking");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("event_type");
                 });
 
             modelBuilder.Entity("sdlt.Entities.Models.Product", b =>
@@ -417,32 +448,32 @@ namespace backEnd.Migrations
 
             modelBuilder.Entity("sdlt.Entities.Models.Booking", b =>
                 {
-                    b.HasOne("sdlt.Entities.Models.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("sdlt.Entities.Models.EventBooking", b =>
-                {
-                    b.HasOne("sdlt.Entities.Models.Booking", "Booking")
-                        .WithMany("EventBooking")
-                        .HasForeignKey("BookingId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("sdlt.Entities.Models.Event", "Event")
-                        .WithMany("EventBooking")
+                        .WithMany("Bookings")
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Booking");
+                    b.HasOne("sdlt.Entities.Models.User", "User")
+                        .WithMany("Bookings")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Event");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("sdlt.Entities.Models.Event", b =>
+                {
+                    b.HasOne("sdlt.Entities.Models.EventType", "EventType")
+                        .WithMany("Events")
+                        .HasForeignKey("EventTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EventType");
                 });
 
             modelBuilder.Entity("sdlt.Entities.Models.Product", b =>
@@ -456,11 +487,6 @@ namespace backEnd.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("sdlt.Entities.Models.Booking", b =>
-                {
-                    b.Navigation("EventBooking");
-                });
-
             modelBuilder.Entity("sdlt.Entities.Models.Category", b =>
                 {
                     b.Navigation("Products");
@@ -468,7 +494,17 @@ namespace backEnd.Migrations
 
             modelBuilder.Entity("sdlt.Entities.Models.Event", b =>
                 {
-                    b.Navigation("EventBooking");
+                    b.Navigation("Bookings");
+                });
+
+            modelBuilder.Entity("sdlt.Entities.Models.EventType", b =>
+                {
+                    b.Navigation("Events");
+                });
+
+            modelBuilder.Entity("sdlt.Entities.Models.User", b =>
+                {
+                    b.Navigation("Bookings");
                 });
 #pragma warning restore 612, 618
         }

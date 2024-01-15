@@ -2,5 +2,5 @@
 
 public record BookingForCreationDto : BookingForManipulationDto
 {
-
+    
 }

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace sdlt.Entities.Models;
 
-[Table("category")]
+[Table("product_category")]
 public class Category
 {
     [Column("category_id")]
