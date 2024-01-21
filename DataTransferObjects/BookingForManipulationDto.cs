@@ -6,8 +6,10 @@ namespace sdlt.DataTransferObjects;
 
 public record BookingForManipulationDto
 {
-    
+
     // public Guid UserId { get; set; } // el user viene dado por añadidura como dice la biblia con el authorize en el controller
+    [Range(1, Constants.MaximumSeatsPerUser)]
+    public int Seats { get; set; }
     private TimeOnly _arrivalTime;
     [Required]
     public TimeOnly ArrivalTime
@@ -18,7 +20,7 @@ public record BookingForManipulationDto
         }
         set
         {
-            if (value.CompareTo(TimeOnly.Parse(Constants.HourLastStartBooking)) <= 0)
+            if (value.CompareTo(new TimeOnly(Constants.HourLastStartBooking, Constants.MinuteLastStartBooking)) <= 0)
             {
                 _arrivalTime = value;
             }
@@ -28,5 +30,5 @@ public record BookingForManipulationDto
             }
         }
     }
-    
+
 }

@@ -1,5 +1,9 @@
+using System.Data;
+using backEnd;
+using CsvHelper.Configuration.Attributes;
 using Microsoft.EntityFrameworkCore;
 using sdlt.Contracts;
+using sdlt.Entities.Exceptions;
 using sdlt.Entities.Models;
 using sdlt.Entities.RequestFeatures;
 using sdlt.Repository.Extensions;
@@ -37,5 +41,16 @@ public class EventRepository : RepositoryBase<Event>, IEventRepository
     public IQueryable<Event> GetEvent(Guid eventId, bool trackChanges)
     {
         return FindByCondition(e => e.Id.Equals(eventId), trackChanges);
+    }
+
+    public async Task UpdateAndControlQuota(Guid eventId, ushort seats)
+    {
+        var theEvent = await FindByCondition(e => e.Id.Equals(eventId), trackChanges: true).SingleOrDefaultAsync()
+            ?? throw new EventNotFoundException(eventId);
+        if(seats <= theEvent.Quota){
+            theEvent.Quota -= (ushort) seats;
+        }else{
+            throw new NoMoreRoomException(eventId, seats, theEvent.Quota);
+        }
     }
 }

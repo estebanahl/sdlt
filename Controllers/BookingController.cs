@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Models;
+using sdlt.Entities.RequestFeatures;
 
 namespace sdlt.Controllers;
 
@@ -22,9 +24,16 @@ public class BookingController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("{id:guid}", Name = "BookingById")]
+    [HttpGet("{id:guid}")]
+    [ActionName(nameof(Get))]
     public async Task<IActionResult> Get(Guid id){
         var bookingDto = await _service.BookingService.GetBookingAsync(id, trackChanges: true);
         return Ok(bookingDto);
+    }
+    [HttpGet]
+    public async Task<IActionResult> GetAll(BookingParameters bookingParameters){
+        var pagedResult = await _service.BookingService.GetAllBookingsAsync(bookingParameters, trackChanges: true);
+        Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagedResult.metaData));
+        return Ok(pagedResult.bookings);
     }
 }

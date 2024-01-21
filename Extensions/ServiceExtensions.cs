@@ -36,9 +36,9 @@ public static class ServiceExtensions
         {
             options.AddPolicy("CorsPolicy", builder =>
             builder.AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .WithExposedHeaders("X-Pagination"));
+                .AllowAnyMethod()
+                .AllowAnyHeader()
+                .WithExposedHeaders("X-Pagination"));
         });
     public static void ConfigureLoggerService(this IServiceCollection services) =>
         services.AddSingleton<ILoggerManager, LoggerManager>();

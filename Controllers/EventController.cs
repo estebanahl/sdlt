@@ -1,6 +1,7 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
 using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
+using CloudinaryDotNet.Actions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
@@ -26,7 +27,7 @@ public class EventController : ControllerBase
     }
 
     [HttpPost]
-    // [Authorize]
+    [Authorize]
     [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> Post([FromBody] EventForCreationDto eventForCreation)
     {
@@ -47,6 +48,7 @@ public class EventController : ControllerBase
     // [ServiceFilter(typeof(ValidationFilterAttribute))] // la validación de objeto nulo hace que no funcione
     // porque el dichoso patchdoc quiere que se escriba como array (empezando con [] y dentro las llaves)
     // esto detona el objeto nulo por alguna razón
+    [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> PatchEvent(Guid id, [FromBody] JsonPatchDocument<EventForUpdateDto> patchDoc)
     {
         var result = await _service.EventService.GetEventForPatch(id, trackChanges: true);
@@ -56,7 +58,7 @@ public class EventController : ControllerBase
         return NoContent();
     }
     [HttpGet("{id:guid}", Name = "EventById")]
-    // [Authorize]
+    // [Authorize]    
     public async Task<IActionResult> Get(Guid id)
     {
         EventDto eventDto = await _service.EventService.GetEventAsync(id, trackChanges: true);
@@ -64,14 +66,16 @@ public class EventController : ControllerBase
         return Ok(eventDto);
     }
     [HttpPost("{eventId:guid}/booking")]
-    [Authorize]
+    [Authorize(Roles = "Administrator")]
+    [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> Post([FromBody] BookingForCreationDto bookingForCreationDto, Guid eventId)
     {
+        
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();
 
         var theBooking = await _service.BookingService.CreateAsync(bookingForCreationDto, eventId, userId, trackChanges: true);
-        return CreatedAtAction("Get", "Booking", new { id = theBooking.Id }, theBooking);
+        return CreatedAtAction(nameof(Get), new { controller = "Booking", id = theBooking.Id }, theBooking);
     }
 }

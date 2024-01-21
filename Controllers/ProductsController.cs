@@ -33,7 +33,7 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize]
+    // [Authorize]
     public async Task<IActionResult> GetAll([FromQuery] ProductParameters parameters)
     {
         var pagedResult = await _service.ProductService.GetAllProductsAsync(parameters, trackChanges: true);

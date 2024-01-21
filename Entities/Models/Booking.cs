@@ -16,6 +16,8 @@ public class Booking
     [Column("event_id")]
     [ForeignKey("Event")]
     public Guid EventId { get; set; }
+    [Column("seats")]
+    public int Seats{get;set;}
     [Column("active")]
     public bool Active { get; set; }
     public virtual User User { get; set; } = null!;

@@ -30,9 +30,12 @@ public class BookingService : IBookingService
         bookingTrackedEntity.Active = true;
         bookingTrackedEntity.UserId = userId;
         bookingTrackedEntity.EventId = eventId;
+        // primero se valida si hay espacio
+        await _repository.Event.UpdateAndControlQuota(eventId,(ushort) bookingForCreation.Seats);
         _repository.Booking.CreateBookInEvent(bookingTrackedEntity);
+        
         await _repository.SaveAsync();
-        ; // mapeo al dto "de muestra"
+
         return _mapper.Map<BookingDto>(bookingTrackedEntity); 
     }
     public async Task<(IEnumerable<BookingDto>? bookings, MetaData metaData)>

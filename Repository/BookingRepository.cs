@@ -30,7 +30,7 @@ public class BookingRepository : RepositoryBase<Booking>, IBookingRepository
         var query =  FindAll(trackChanges)
                 .FilterByUser(bookingParameters.UserId)
                 .FilterByEvent(bookingParameters.EventId) // asumamos que un guid empty daría
-                .FilterHourOfBookings(bookingParameters.MinHour, bookingParameters.MaxHour)
+                .FilterHourOfBookings(bookingParameters.MinHour, bookingParameters.MinMinute, bookingParameters.MaxHour, bookingParameters.MaxMinute)
                 .SearchByUserName(bookingParameters.SearchTerm!)
                 .Sort(bookingParameters.OrderBy!)
                 .Skip((bookingParameters.PageNumber - 1) * bookingParameters.PageSize)

@@ -9,8 +9,14 @@ namespace sdlt.Repository.Extensions;
 public static class RepositoryBookingExtensions
 {
     public static IQueryable<Booking> FilterHourOfBookings(
-        this IQueryable<Booking> bookings, TimeOnly minHour, TimeOnly maxHour) =>
-            bookings.Where(e => e.ArrivalTime.CompareTo(minHour) >= 0 || e.ArrivalTime.CompareTo(maxHour) <= 0);
+        this IQueryable<Booking> bookings, int minHour, int minMinute, int maxHour, int maxMinute)
+    {
+        var maxTime = new TimeOnly(maxHour, maxMinute);
+        var minTime = new TimeOnly(minHour, minMinute);
+
+        return bookings.Where(e => e.ArrivalTime.CompareTo(minTime) >= 0 && e.ArrivalTime.CompareTo(maxTime) <= 0);
+    }
+
 
     public static IQueryable<Booking> FilterByEvent(
         this IQueryable<Booking> bookings, Guid eventId)
@@ -31,8 +37,9 @@ public static class RepositoryBookingExtensions
         else
             return bookings;
     }
-    public static IQueryable<Booking> SearchByUserName(this IQueryable<Booking> events, string searchTerm){
-        if(string.IsNullOrWhiteSpace(searchTerm))
+    public static IQueryable<Booking> SearchByUserName(this IQueryable<Booking> events, string searchTerm)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
             return events;
 
         var lowerCaseTerm = searchTerm.Trim().ToLower();
@@ -41,13 +48,14 @@ public static class RepositoryBookingExtensions
             .Include(b => b.User)
             .Where(b => b.User.UserName.ToLower().Contains(lowerCaseTerm));
     }
-    public static IQueryable<Booking> Sort(this IQueryable<Booking> events, string orderByQueryString){
-        if(string.IsNullOrWhiteSpace(orderByQueryString))
+    public static IQueryable<Booking> Sort(this IQueryable<Booking> events, string orderByQueryString)
+    {
+        if (string.IsNullOrWhiteSpace(orderByQueryString))
             return events.OrderBy(b => b.ArrivalTime);
 
         var orderQuery = OrderQueryBuilder.CreateOrderQuery<Booking>(orderByQueryString);
 
-        if(string.IsNullOrWhiteSpace(orderQuery))
+        if (string.IsNullOrWhiteSpace(orderQuery))
             return events.OrderBy(b => b.ArrivalTime);
 
         return events.OrderBy(orderQuery);
