@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using sdlt.Contracts;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Exceptions;
@@ -56,5 +58,25 @@ public class BookingService : IBookingService
         
         return _mapper.Map<BookingDto>(bookingEntity);
 
+    }
+    public async Task CancelBookingAsync(Guid bookingId, Guid userIdfromController, bool trackChanges)
+    {
+        // se obtiene el booking que se quiere eliminar (sin monitoreo (trackChanges=false) para mayor velocidad)
+        Booking? bookingEntity = await _repository.Booking.GetBooking(bookingId, trackChanges)
+            ?? throw new BookingNotFoundException(bookingId);
+        // user Id en la bd porque así lo dispuso identity es un string, entonces se eligió convertir el guid del controller a string
+        if(!bookingEntity.UserId.Equals(userIdfromController.ToString()))
+            throw new Exception("You can try but actually you can't delete booking of another person"); // nunca probé
+
+        Event? eventEntity = await _repository.Event.GetEvent(bookingEntity.EventId, trackChanges: true)
+            .SingleOrDefaultAsync()
+                ?? throw new EventNotFoundException(bookingEntity.EventId);
+
+        // revertimos o sumamos de vuelta a la cantidad disponible, como está rastreada la entidad solo con editar y luego 
+        // guardar es suficiente
+        eventEntity.Quota += (ushort)bookingEntity.Seats;
+        _repository.Booking.DeleteBooking(bookingEntity);
+        
+        await _repository.SaveAsync();
     }
 }

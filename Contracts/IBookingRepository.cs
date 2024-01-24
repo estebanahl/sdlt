@@ -9,4 +9,5 @@ public interface IBookingRepository
     Task<PagedList<Booking>> GetBookings(BookingParameters bookingParameters, bool trackChanges);
     Task<Booking?> GetBooking(Guid bookingId, bool trackChanges);
     void CreateBookInEvent(Booking booking);
+    void DeleteBooking(Booking booking);
 }

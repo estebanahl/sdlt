@@ -20,6 +20,11 @@ public class BookingRepository : RepositoryBase<Booking>, IBookingRepository
         Create(booking);
     }
 
+    public void DeleteBooking(Booking booking)
+    {
+        Delete(booking);
+    }
+
     public async Task<Booking?> GetBooking(Guid bookingId, bool trackChanges)
     {
        return await FindByCondition(b => b.Id.Equals(bookingId), trackChanges).SingleOrDefaultAsync();
@@ -29,7 +34,7 @@ public class BookingRepository : RepositoryBase<Booking>, IBookingRepository
     {
         var query =  FindAll(trackChanges)
                 .FilterByUser(bookingParameters.UserId)
-                .FilterByEvent(bookingParameters.EventId) // asumamos que un guid empty daría
+                .FilterByEvent(bookingParameters.EventId)
                 .FilterHourOfBookings(bookingParameters.MinHour, bookingParameters.MinMinute, bookingParameters.MaxHour, bookingParameters.MaxMinute)
                 .SearchByUserName(bookingParameters.SearchTerm!)
                 .Sort(bookingParameters.OrderBy!)

@@ -32,8 +32,7 @@ public static class RepositoryBookingExtensions
     {
         if (!userId.Equals(Guid.Empty))
             return bookings
-                .Include(b => b.User)
-                .Where(b => b.User.Id.Equals(userId));
+                .Where(b => b.UserId.Equals(userId));
         else
             return bookings;
     }

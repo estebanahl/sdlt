@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,4 +37,15 @@ public class BookingController : ControllerBase
         Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagedResult.metaData));
         return Ok(pagedResult.bookings);
     }
+
+    [HttpDelete("{id:guid}")]
+    [Authorize]
+    public async Task<IActionResult> Cancel(Guid id){
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId))
+            return Unauthorized();        
+
+        await _service.BookingService.CancelBookingAsync(id, Guid.Parse(userId), trackChanges: true);
+        return NoContent();
+    }    
 }
