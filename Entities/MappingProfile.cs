@@ -1,4 +1,5 @@
 using AutoMapper;
+using backEnd;
 using sdlt.DataTransferObjects;
 using sdlt.Entities.Models;
 
@@ -28,5 +29,9 @@ public class MappingProfile : Profile
                 opt.MapFrom(bk => bk.User.UserName))
             .ForMember(bkdto => bkdto.EventType, opt => 
                 opt.MapFrom(bk => bk.Event.EventType.Name));
+        CreateMap<User, UserWithRoles>();
+        CreateMap<User, UserDto>();
+            // .ForMember(udto => udto.Roles, opt =>
+            //     opt.MapFrom(u => u.));
     }
 }

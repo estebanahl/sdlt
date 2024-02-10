@@ -1,11 +1,13 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Npgsql.Replication;
 using sdlt.Contracts;
 using sdlt.Entities.Models;
@@ -84,6 +86,35 @@ public static class ServiceExtensions
                 IssuerSigningKey = new
                     SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey!))
             };
+        });
+    }
+    public static void ConfigureSwagger(this IServiceCollection services)
+    {
+        services.AddSwaggerGen(opt =>
+        {
+            opt.SwaggerDoc("v1", new OpenApiInfo { Title = "SDLT Api", Version = "v1" });
+            opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please enter token",
+                Name = "Authorization",
+                Type = SecuritySchemeType.Http,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
+            });
+            opt.AddSecurityRequirement(new OpenApiSecurityRequirement{
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[]{}
+                }
+            });
         });
     }
 }

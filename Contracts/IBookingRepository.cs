@@ -10,4 +10,5 @@ public interface IBookingRepository
     Task<Booking?> GetBooking(Guid bookingId, bool trackChanges);
     void CreateBookInEvent(Booking booking);
     void DeleteBooking(Booking booking);
+    Task<IEnumerable<Booking>> GetBookingByUserId(string userId, bool trackChanges);
 }

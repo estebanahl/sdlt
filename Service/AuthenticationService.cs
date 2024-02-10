@@ -1,11 +1,14 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using sdlt.Contracts;
 using sdlt.DataTransferObjects;
+using sdlt.Entities.Exceptions;
 using sdlt.Entities.Models;
 using sdlt.Service.Contracts;
 
@@ -17,15 +20,18 @@ internal sealed class AuthenticationService : IAuthenticationService
     private readonly IMapper _mapper;
     private readonly UserManager<User> _userManager;
     private readonly IConfiguration _configuration;
+    private readonly RoleManager<IdentityRole> _roleManager;
     private User? _user;
 
     public AuthenticationService(ILoggerManager logger, IMapper mapper,
-        UserManager<User> userManager, IConfiguration configuration)
+        UserManager<User> userManager, IConfiguration configuration,
+        RoleManager<IdentityRole> roleManager)
     {
         _logger = logger;
         _mapper = mapper;
         _userManager = userManager;
         _configuration = configuration;
+        _roleManager = roleManager;
     }
 
     public async Task<IdentityResult> RegisterUser(UserForRegistrationDto userForRegistration)
@@ -35,8 +41,17 @@ internal sealed class AuthenticationService : IAuthenticationService
         var result = await _userManager.CreateAsync(user, userForRegistration.Password);
 
         if (result.Succeeded)
-            await _userManager.AddToRolesAsync(user, userForRegistration.Roles);
+            await _userManager.AddToRolesAsync(user, new List<string>() { "User" });
 
+        return result;
+    }
+    public async Task<IdentityResult> CreateRole(CreateRoleViewDto model)
+    {
+        IdentityRole identityRole = new IdentityRole
+        {
+            Name = model.RoleName
+        };
+        IdentityResult result = await _roleManager.CreateAsync(identityRole);
         return result;
     }
     public async Task<bool> ValidateUser(UserForAuthenticationDto userForAuth)
@@ -51,6 +66,27 @@ internal sealed class AuthenticationService : IAuthenticationService
         return result;
     }
 
+    public async Task<UserDto> GetMyself(IIdentity userIdentificator)
+    {
+        // User user = new();
+        // if (Guid.TryParse(userIdentificator, out Guid _))
+        // {
+        //     user = await _userManager.GetUserAsync(new ClaimsPrincipal(
+        //         new ClaimsIdentity(new[]
+        //             {
+        //                 new Claim(ClaimTypes.NameIdentifier, userIdentificator)
+        //             })
+        //         ));
+        // }else{
+        //     user = await _userManager.FindByNameAsync(userIdentificator);
+        // }
+        // if(user is null)
+        //     throw new UserNotFoundException(userIdentificator);
+        User user = await _userManager.GetUserAsync(new ClaimsPrincipal(userIdentificator));
+        return _mapper.Map<UserDto>(user);
+    }
+
+    #region JWT
     public async Task<string> CreateToken()
     {
         var signinCredentials = GetSigningCredentials();
@@ -96,4 +132,5 @@ internal sealed class AuthenticationService : IAuthenticationService
         );
         return tokenOptions;
     }
+    #endregion
 }

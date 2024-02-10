@@ -28,7 +28,7 @@ builder.Services.AddControllers()
 builder.Services.AllowSerializationOfDateOnly();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.ConfigureSwagger();
 
 var app = builder.Build();
 var logger = app.Services.GetRequiredService<ILoggerManager>();

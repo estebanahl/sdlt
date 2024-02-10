@@ -24,7 +24,7 @@ internal sealed class ProductService : IProductService
     }
     public async Task<(IEnumerable<ProductDto>? products, MetaData metaData)> GetAllProductsAsync(ProductParameters parameters, bool trackChanges)
     {
-        if(!parameters.ValidPriceRange)
+        if(!parameters.ValidPriceRange())
             throw new MaxPriceRangeBadRequestException();
             
         var productsWithMetaData = await _repository.Product.GetAllProducts(parameters, trackChanges);
@@ -37,7 +37,7 @@ internal sealed class ProductService : IProductService
     public async Task<(IEnumerable<ProductDto>? products, MetaData metaData)> GetProductsForCategory(
         ProductParameters parameters, Guid categoryId, bool trackChanges)
     {
-        if(!parameters.ValidPriceRange)
+        if(!parameters.ValidPriceRange())
             throw new MaxPriceRangeBadRequestException();
 
         var category = await GetCategoryAndCheckIfExists(categoryId, trackChanges: false);

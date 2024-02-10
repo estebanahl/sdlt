@@ -6,7 +6,8 @@ public class ProductParameters : RequestParameters
     public decimal MinPrice { get; set; }
     public decimal MaxPrice { get; set; } = decimal.MaxValue;
 
-    public bool ValidPriceRange => (MinPrice >= 0 && MaxPrice >= 0) && (MinPrice < MaxPrice);
+    
+    public bool ValidPriceRange() => (MinPrice >= 0 && MaxPrice >= 0) && (MinPrice < MaxPrice);
 
     public string? SearchTerm { get; set; }
 }

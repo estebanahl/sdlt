@@ -2,6 +2,7 @@
 using System.Text.Json;
 using Castle.DynamicProxy.Generators.Emitters.SimpleAST;
 using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
@@ -27,7 +28,7 @@ public class EventController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize]
+    // [Authorize]
     [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> Post([FromBody] EventForCreationDto eventForCreation)
     {
@@ -45,9 +46,6 @@ public class EventController : ControllerBase
     }
     [HttpPatch("{id:guid}")]
     // [Authorize]
-    // [ServiceFilter(typeof(ValidationFilterAttribute))] // la validación de objeto nulo hace que no funcione
-    // porque el dichoso patchdoc quiere que se escriba como array (empezando con [] y dentro las llaves)
-    // esto detona el objeto nulo por alguna razón
     [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> PatchEvent(Guid id, [FromBody] JsonPatchDocument<EventForUpdateDto> patchDoc)
     {
@@ -66,7 +64,7 @@ public class EventController : ControllerBase
         return Ok(eventDto);
     }
     [HttpPost("{eventId:guid}/booking")]
-    [Authorize(Roles = "Administrator")]
+    [Authorize(Roles = "User", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]   
     [ServiceFilter(typeof(ValidationFilterAttribute))]
     public async Task<IActionResult> Post([FromBody] BookingForCreationDto bookingForCreationDto, Guid eventId)
     {

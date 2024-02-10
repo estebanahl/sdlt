@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -12,7 +13,9 @@ public class ValidationFilterAttribute : IActionFilter
         var controller = context.RouteData.Values["controller"];
 
         var param = context.ActionArguments.SingleOrDefault(
-            x => x.Value!.ToString()!.Contains("Dto")
+            x => x.Value!.ToString()!.Contains("Dto") ||
+            x.Value!.ToString()!.Contains("Parameter") ||
+            x.Value!.ToString()!.Contains("JsonPatchDocument")
         ).Value;
 
         if (param is null){

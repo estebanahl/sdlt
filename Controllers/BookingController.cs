@@ -41,7 +41,7 @@ public class BookingController : ControllerBase
     [HttpDelete("{id:guid}")]
     [Authorize]
     public async Task<IActionResult> Cancel(Guid id){
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value; // cambair para que use solo claimsprincipal
         if (string.IsNullOrEmpty(userId))
             return Unauthorized();        
 

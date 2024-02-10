@@ -9,6 +9,7 @@ public sealed class RepositoryManager : IRepositoryManager
     private readonly Lazy<IProductRepository> _productRepository;
     private readonly Lazy<IEventRepository> _eventRepository;
     private readonly Lazy<IBookingRepository> _bookingRepository;
+    private readonly Lazy<IUserRepository> _userRepository;
     public RepositoryManager(RepositoryContext repositoryContext)
     {
         _repositoryContext = repositoryContext;
@@ -20,11 +21,14 @@ public sealed class RepositoryManager : IRepositoryManager
         EventRepository(repositoryContext));
         _bookingRepository = new Lazy<IBookingRepository>(() => new
         BookingRepository(repositoryContext));
+        _userRepository = new Lazy<IUserRepository>(() => new
+        UserRepository(repositoryContext));
     }
     public ICategoryRepository Category => _categoryRepository.Value;
     public IProductRepository Product => _productRepository.Value;
     public IEventRepository Event => _eventRepository.Value;
     public IBookingRepository Booking => _bookingRepository.Value;
+    public IUserRepository User => _userRepository.Value;
     
     public Task SaveAsync() => _repositoryContext.SaveChangesAsync();
 }

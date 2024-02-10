@@ -6,5 +6,6 @@ public interface IRepositoryManager
     IProductRepository Product { get; }
     IEventRepository Event { get; }
     IBookingRepository Booking { get; }
+    IUserRepository User {get;}
     Task SaveAsync();
 }

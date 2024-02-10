@@ -1,0 +1,11 @@
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace sdlt.DataTransferObjects;
+
+public class CreateRoleViewDto
+{
+    [Required]
+    [Display(Name = "Role")]
+    public string RoleName { get; set; } = string.Empty;
+}
+

@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="DataTransferObjects/CreateRoleViewDtocs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="DataTransferObjects/CreateRoleViewDtocs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
     <PackageReference Include="CloudinaryDotNet" Version="1.24.0" />
     <PackageReference Include="CsvHelper" Version="30.0.1" />

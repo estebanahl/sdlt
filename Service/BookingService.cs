@@ -1,5 +1,9 @@
-﻿using AutoMapper;
+﻿using System.Security.Claims;
+using System.Security.Principal;
+using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.EntityFrameworkCore;
 using sdlt.Contracts;
 using sdlt.DataTransferObjects;
@@ -15,13 +19,15 @@ public class BookingService : IBookingService
     private readonly IRepositoryManager _repository;
     private readonly ILoggerManager _logger;
     private readonly IMapper _mapper;
+    private readonly UserManager<User> _userManager;
 
     public BookingService(IRepositoryManager repository, ILoggerManager
-    logger, IMapper mapper)
+    logger, IMapper mapper, UserManager<User> userManager)
     {
         _repository = repository;
         _logger = logger;
         _mapper = mapper;
+        _userManager = userManager;
     }
 
     public async Task<BookingDto> CreateAsync(BookingForCreationDto bookingForCreation, Guid eventId, string userId, bool trackChanges)
@@ -78,5 +84,12 @@ public class BookingService : IBookingService
         _repository.Booking.DeleteBooking(bookingEntity);
         
         await _repository.SaveAsync();
+    }
+
+    public async Task<IEnumerable<BookingDto>> GetMyBookings(ClaimsPrincipal me)
+    {
+        string userId = me.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+        IEnumerable<Booking> bookings = await _repository.Booking.GetBookingByUserId(userId, trackChanges: true);
+        return _mapper.Map<IEnumerable<BookingDto>>(bookings);
     }
 }

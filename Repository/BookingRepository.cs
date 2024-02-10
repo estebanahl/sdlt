@@ -27,12 +27,17 @@ public class BookingRepository : RepositoryBase<Booking>, IBookingRepository
 
     public async Task<Booking?> GetBooking(Guid bookingId, bool trackChanges)
     {
-       return await FindByCondition(b => b.Id.Equals(bookingId), trackChanges).SingleOrDefaultAsync();
+        return await FindByCondition(b => b.Id.Equals(bookingId), trackChanges).SingleOrDefaultAsync();
+    }
+
+    public async Task<IEnumerable<Booking>> GetBookingByUserId(string userId, bool trackChanges)
+    {
+        return await FindByCondition(b => b.UserId.Equals(userId), trackChanges).ToListAsync();
     }
 
     public async Task<PagedList<Booking>> GetBookings(BookingParameters bookingParameters, bool trackChanges)
     {
-        var query =  FindAll(trackChanges)
+        var query = FindAll(trackChanges)
                 .FilterByUser(bookingParameters.UserId)
                 .FilterByEvent(bookingParameters.EventId)
                 .FilterHourOfBookings(bookingParameters.MinHour, bookingParameters.MinMinute, bookingParameters.MaxHour, bookingParameters.MaxMinute)
@@ -40,11 +45,11 @@ public class BookingRepository : RepositoryBase<Booking>, IBookingRepository
                 .Sort(bookingParameters.OrderBy!)
                 .Skip((bookingParameters.PageNumber - 1) * bookingParameters.PageSize)
                 .Take(bookingParameters.PageSize);
-                
-            
+
+
         var count = await query.CountAsync();
         List<Booking> bookingsList = await query.ToListAsync();
         return PagedList<Booking>.ToPagedList(bookingsList, count, bookingParameters.PageNumber, bookingParameters.PageSize);
-    
+
     }
 }

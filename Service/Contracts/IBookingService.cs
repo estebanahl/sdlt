@@ -1,6 +1,5 @@
-﻿using System.Reflection.Metadata.Ecma335;
+﻿using System.Security.Claims;
 using sdlt.DataTransferObjects;
-using sdlt.Entities.Models;
 using sdlt.Entities.RequestFeatures;
 
 namespace sdlt.Service.Contracts;
@@ -12,4 +11,5 @@ public interface IBookingService
     Task<BookingDto> CreateAsync(BookingForCreationDto categoryForCreation, Guid eventId, string userId, bool trackChanges);
     // userId para verificar pertenencia de la reserva a cancelar a el user del controlador
     Task CancelBookingAsync(Guid bookingId, Guid userId, bool trackChanges);
+    Task<IEnumerable<BookingDto>> GetMyBookings(ClaimsPrincipal me);
 }

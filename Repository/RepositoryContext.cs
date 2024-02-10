@@ -13,8 +13,8 @@ public class RepositoryContext : IdentityDbContext<User>
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfiguration(new CategoryConfiguration());
-        modelBuilder.ApplyConfiguration(new ProductConfiguration());
+        // modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+        // modelBuilder.ApplyConfiguration(new ProductConfiguration());
         modelBuilder.ApplyConfiguration(new RoleConfiguration());
     }
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
